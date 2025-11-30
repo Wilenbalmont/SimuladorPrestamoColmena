@@ -13,11 +13,7 @@
       --fs-result: clamp(1rem, 4vw, 1.15rem);
     }
 
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
-    }
+    body { margin: 0; padding: 0; background: #f5f5f5; }
 
     .simulador-prestamo-container {
       font-family: Arial, sans-serif;
@@ -27,7 +23,7 @@
       background: #fff;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     h1 {
@@ -47,10 +43,7 @@
       font-size: var(--fs-h2);
     }
 
-    .input-group,
-    .result-line {
-      margin-bottom: 14px;
-    }
+    .input-group, .result-line { margin-bottom: 14px; }
 
     label {
       display: block;
@@ -60,14 +53,13 @@
       font-size: var(--fs-label);
     }
 
-    input[type="number"],
-    input[readonly] {
+    input[type="number"], input[readonly] {
       width: 100%;
       padding: 12px;
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: var(--fs-input);
-      text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.12);
+      text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.12);
       background-color: #fff;
       color: #000;
       box-sizing: border-box;
@@ -89,14 +81,8 @@
       gap: 6px 12px;
     }
 
-    .result-line:last-of-type {
-      border-bottom: none;
-    }
-
-    .result-line span {
-      font-weight: 500;
-      color: #333;
-    }
+    .result-line:last-of-type { border-bottom: none; }
+    .result-line span { font-weight: 500; color: #333; }
 
     .result-line strong {
       color: #28a745;
@@ -104,7 +90,7 @@
       background-color: #e9f7eb;
       padding: 6px 10px;
       border-radius: 6px;
-      text-shadow: 0.6px 0.6px 1.2px rgba(0, 0, 0, 0.18);
+      text-shadow: 0.6px 0.6px 1.2px rgba(0,0,0,0.18);
     }
 
     .result-line.highlight strong {
@@ -113,73 +99,32 @@
       font-size: calc(var(--fs-result) * 1.15);
     }
 
+    /* Móviles */
     @media (max-width: 600px) {
-      .simulador-prestamo-container {
-        padding: 14px;
-        margin: 10px;
-      }
-
-      .result-line {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .result-line strong {
-        width: 100%;
-        text-align: left;
-      }
+      .simulador-prestamo-container { padding: 14px; margin: 10px; }
+      .result-line { flex-direction: column; align-items: flex-start; }
+      .result-line strong { width: 100%; text-align: left; }
     }
 
+    /* Modo oscuro automático */
     @media (prefers-color-scheme: dark) {
-      body {
-        background: #121212;
-      }
-
+      body { background: #121212; }
       .simulador-prestamo-container {
-        background: #1e1f22;
-        color: #e8e8e8;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        background: #1e1f22; color: #e8e8e8;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
       }
-
-      h1 {
-        color: #66a3ff;
-        border-color: #66a3ff;
-      }
-
-      h2 {
-        color: #e0e0e0;
-        border-color: #333;
-      }
-
-      label {
-        color: #ccc;
-      }
-
+      h1 { color: #66a3ff; border-color: #66a3ff; }
+      h2 { color: #e0e0e0; border-color: #333; }
+      label { color: #ccc; }
       input[type="number"] {
-        background-color: #2a2b2f;
-        border-color: #444;
-        color: #fff;
+        background-color: #2a2b2f; border-color: #444; color: #fff;
       }
-
       input[readonly] {
-        background-color: #2a2b2f;
-        border-color: #666;
-        color: #fff;
+        background-color: #2a2b2f; border-color: #666; color: #fff;
       }
-
-      .result-line {
-        border-color: #2c2c2c;
-      }
-
-      .result-line strong {
-        background-color: #203a28;
-        color: #7ddc8c;
-      }
-
-      .result-line.highlight strong {
-        background-color: #20334a;
-        color: #7fb8ff;
-      }
+      .result-line { border-color: #2c2c2c; }
+      .result-line strong { background-color: #203a28; color: #7ddc8c; }
+      .result-line.highlight strong { background-color: #20334a; color: #7fb8ff; }
     }
   </style>
 </head>
@@ -245,5 +190,81 @@
     }
 
     function calculateLoan() {
-      const principal = parseFloat(document.getElementById("loanAmount").value) || 0;
-      let periods = parseInt(document.getElementBy
+      const principalEl = document.getElementById("loanAmount");
+      const periodsEl  = document.getElementById("numPayments");
+      const savingsEl  = document.getElementById("minimumSavings");
+
+      const interestPerPaymentEl  = document.getElementById("interestPerPayment");
+      const principalPerPaymentEl = document.getElementById("principalPerPayment");
+      const totalPaymentEl        = document.getElementById("totalPayment");
+      const totalRepaymentEl      = document.getElementById("totalRepayment");
+      const totalEstimateEl       = document.getElementById("totalEstimate");
+
+      const principal = parseFloat(principalEl.value) || 0;
+      let periods     = parseInt(periodsEl.value) || 1;
+      let savings     = parseFloat(savingsEl.value);
+
+      const MIN_SAVINGS = 55000;
+      const MAX_PERIODS = 18;
+
+      // Normalizar ahorro mínimo
+      if (isNaN(savings) || savings < MIN_SAVINGS) {
+        savings = MIN_SAVINGS;
+        savingsEl.value = MIN_SAVINGS;
+      }
+
+      // Limitar periodos al rango 1..18 (entrada)
+      if (periods < 1) { periods = 1; }
+      if (periods > MAX_PERIODS) { periods = MAX_PERIODS; }
+      periodsEl.value = periods;
+
+      // Tasa
+      const ratePercent = getInterestRate(principal);
+      const monthlyRate = ratePercent / 100;
+      document.getElementById("interestRate").value = ratePercent.toFixed(2) + "%";
+
+      // Formateador COP
+      const fmt = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 });
+
+      // Si principal no válido, limpiar resultados y salir
+      if (principal <= 0) {
+        const zero = fmt.format(0);
+        interestPerPaymentEl.textContent  = zero;
+        principalPerPaymentEl.textContent = zero;
+        totalPaymentEl.textContent        = zero;
+        totalRepaymentEl.textContent      = zero;
+        totalEstimateEl.textContent       = zero;
+        return;
+      }
+
+      // Garantizar que la cuota de principal por pago no sea menor que el ahorro sugerido:
+      // principal / periods >= savings  =>  periods <= principal / savings
+      // Si el usuario puso muy pocas cuotas, ajustamos al mínimo necesario.
+      const minPeriodsBySavings = Math.ceil(principal / savings);
+      if (periods < minPeriodsBySavings) {
+        periods = Math.min(minPeriodsBySavings, MAX_PERIODS);
+        periodsEl.value = periods;
+      }
+
+      // Cálculos
+      const interestPerPayment  = principal * monthlyRate;
+      const principalPerPayment = principal / periods;
+      const totalPayment        = principalPerPayment + interestPerPayment;
+      const totalRepayment      = totalPayment * periods;
+      const totalEstimate       = totalPayment + savings;
+
+      // Actualizar resultados
+      interestPerPaymentEl.textContent  = fmt.format(interestPerPayment);
+      principalPerPaymentEl.textContent = fmt.format(principalPerPayment);
+      totalPaymentEl.textContent        = fmt.format(totalPayment);
+      totalRepaymentEl.textContent      = fmt.format(totalRepayment);
+      totalEstimateEl.textContent       = fmt.format(totalEstimate);
+    }
+
+    // Ejecutar al cargar y en cambios
+    document.addEventListener("DOMContentLoaded", calculateLoan);
+    // Fallback adicional para entornos que cargan lento
+    window.addEventListener("load", calculateLoan);
+  </script>
+</body>
+</html>
