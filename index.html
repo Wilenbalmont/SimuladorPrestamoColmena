@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Simulador de Préstamo</title>
   <style>
+    /* VARIABLES CSS y DARK MODE */
     :root {
       --fs-h1: clamp(1.5rem, 5vw, 2.2rem);
       --fs-h2: clamp(1.2rem, 4vw, 1.5rem);
@@ -24,8 +25,19 @@
         --color-input-bg: #2c2c2c;
         --color-input-text: #ffffff;
       }
+      .simulador-prestamo-container {
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+      }
+      .result-line strong {
+        text-shadow: none;
+      }
+      .result-line.highlight strong {
+        background-color: #004085;
+        color: #ffffff;
+      }
     }
 
+    /* ESTILOS GENERALES Y LAYOUT */
     body {
       margin: 0;
       padding: 0;
@@ -65,6 +77,7 @@
       margin-bottom: 14px;
     }
 
+    /* ESTILOS DE ENTRADAS */
     .input-group label {
       display: block;
       margin-bottom: 6px;
@@ -86,12 +99,14 @@
       text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.12);
     }
 
+    /* Campo de solo lectura (Tasa de Interés) */
     .input-group input[readonly] {
       background-color: #f0f0f0;
       border: 1px dashed #999;
       color: #333;
     }
 
+    /* ESTILOS DE RESULTADOS */
     .result-line {
       display: flex;
       justify-content: space-between;
@@ -121,6 +136,7 @@
       font-size: calc(var(--fs-result) * 1.15);
     }
 
+    /* RESPONSIVIDAD */
     @media (max-width: 600px) {
       .simulador-prestamo-container {
         padding: 16px;
@@ -157,7 +173,7 @@
         min="1"
         max="18"
         step="1"
-        oninput="validatePayments(); calculateLoan()"
+        oninput="calculateLoan()"
       />
     </div>
 
@@ -207,44 +223,40 @@
       return 1.2;
     }
 
-    function validatePayments() {
-      const input = document.getElementById("numPayments");
-      let value = parseInt(input.value) || 1;
-      if (value < 1) value = 1;
-      if (value > 18) value = 18;
-      input.value = value;
-    }
-
     function calculateLoan() {
       const principalInput = document.getElementById('loanAmount');
-      const periodsInput   = document.getElementById('numPayments');
-      const savingsInput   = document.getElementById('minimumSavings');
+      const periodsInput = document.getElementById('numPayments');
+      const savingsInput = document.getElementById('minimumSavings');
 
-      const interestPerPaymentEl  = document.getElementById('interestPerPayment');
+      const interestPerPaymentEl = document.getElementById('interestPerPayment');
       const principalPerPaymentEl = document.getElementById('principalPerPayment');
-      const totalPaymentEl        = document.getElementById('totalPayment');
-      const totalRepaymentEl      = document.getElementById('totalRepayment');
-      const totalEstimateEl       = document.getElementById('totalEstimate');
+      const totalPaymentEl = document.getElementById('totalPayment');
+      const totalRepaymentEl = document.getElementById('totalRepayment');
+      const totalEstimateEl = document.getElementById('totalEstimate');
 
       const principal = parseFloat(principalInput.value) || 0;
-      let periods     = parseInt(periodsInput.value) || 1;
-      let savings     = parseFloat(savingsInput.value);
+      let periods = parseInt(periodsInput.value) || 1;
+      let savings = parseFloat(savingsInput.value);
 
       const MIN_SAVINGS = 55000;
       const MAX_PERIODS = 18;
 
-      // Normalizar ahorro mínimo
+      // 1. VALIDACIÓN Y AJUSTE DE CUOTAS (1 a 18)
+      if (periods < 1) {
+        periods = 1;
+      }
+      if (periods > MAX_PERIODS) {
+        periods = MAX_PERIODS;
+      }
+      periodsInput.value = periods;
+      
+      // 2. Normalizar ahorro mínimo
       if (isNaN(savings) || savings < MIN_SAVINGS) {
         savings = MIN_SAVINGS;
         savingsInput.value = MIN_SAVINGS;
       }
 
-      // Limitar periodos al rango 1..18 (entrada)
-      if (periods < 1) periods = 1;
-      if (periods > MAX_PERIODS) periods = MAX_PERIODS;
-      periodsInput.value = periods;
-
-      // Tasa
+      // 3. Calcular Tasa
       const ratePercent = getInterestRate(principal);
       const monthlyRate = ratePercent / 100;
       document.getElementById('interestRate').value = ratePercent.toFixed(2) + '%';
@@ -257,46 +269,39 @@
       // Si principal no válido, limpiar resultados y salir
       if (principal <= 0) {
         const zero = fmt.format(0);
-        interestPerPaymentEl.textContent  = zero;
+        interestPerPaymentEl.textContent = zero;
         principalPerPaymentEl.textContent = zero;
-        totalPaymentEl.textContent        = zero;
-        totalRepaymentEl.textContent      = zero;
-        totalEstimateEl.textContent       = zero;
+        totalPaymentEl.textContent = zero;
+        totalRepaymentEl.textContent = zero;
+        totalEstimateEl.textContent = zero;
         return;
       }
 
-      // Garantizar que la cuota de principal por pago no sea menor que el ahorro sugerido:
-      // principal / periods >= savings  =>  periods <= principal / savings
+      // 4. Aplicar restricción de periodos basada en ahorro (periodos <= principal / savings)
       const minPeriodsBySavings = Math.ceil(principal / savings);
       if (periods < minPeriodsBySavings) {
         periods = Math.min(minPeriodsBySavings, MAX_PERIODS);
         periodsInput.value = periods;
       }
 
-      // Cálculos
-      const interestPerPayment  = principal * monthlyRate;
+      // 5. Cálculos Finales
+      const interestPerPayment = principal * monthlyRate;
       const principalPerPayment = principal / periods;
-      const totalPayment        = principalPerPayment + interestPerPayment;
-      const totalRepayment      = totalPayment * periods;
-      const totalEstimate       = totalPayment + savings;
+      const totalPayment = principalPerPayment + interestPerPayment;
+      const totalRepayment = totalPayment * periods;
+      const totalEstimate = totalPayment + savings;
 
-      // Actualizar resultados
-      interestPerPaymentEl.textContent  = fmt.format(interestPerPayment);
+      // 6. Actualizar resultados
+      interestPerPaymentEl.textContent = fmt.format(interestPerPayment);
       principalPerPaymentEl.textContent = fmt.format(principalPerPayment);
-      totalPaymentEl.textContent        = fmt.format(totalPayment);
-      totalRepaymentEl.textContent      = fmt.format(totalRepayment);
-      totalEstimateEl.textContent       = fmt.format(totalEstimate);
+      totalPaymentEl.textContent = fmt.format(totalPayment);
+      totalRepaymentEl.textContent = fmt.format(totalRepayment);
+      totalEstimateEl.textContent = fmt.format(totalEstimate);
     }
 
-    // Ejecutar al cargar y en cambios
-    document.addEventListener('DOMContentLoaded', () => {
-      validatePayments();
-      calculateLoan();
-    });
-    window.addEventListener('load', () => {
-      validatePayments();
-      calculateLoan();
-    });
+    // Inicializar y asegurar que los cálculos se ejecuten al cargar
+    document.addEventListener('DOMContentLoaded', calculateLoan);
+    window.addEventListener('load', calculateLoan);
   </script>
 </body>
 </html>
