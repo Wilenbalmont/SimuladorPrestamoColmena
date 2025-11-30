@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Simulador de Préstamo</title>
 <style>
     :root {
@@ -18,12 +18,11 @@
         max-width: 720px;
         width: 100%;
         margin: 16px auto;
-        background: white;
+        background: #fff;
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-
     .simulador-prestamo-container h1 {
         text-align: center;
         color: #007bff;
@@ -32,7 +31,6 @@
         margin-bottom: 20px;
         font-size: var(--fs-h1);
     }
-
     .simulador-prestamo-container h2 {
         color: #333;
         margin-top: 20px;
@@ -41,10 +39,7 @@
         font-size: var(--fs-h2);
     }
 
-    .input-group, .result-line {
-        margin-bottom: 14px;
-    }
-
+    .input-group, .result-line { margin-bottom: 14px; }
     .input-group label {
         display: block;
         margin-bottom: 6px;
@@ -52,14 +47,13 @@
         color: #555;
         font-size: var(--fs-label);
     }
-
     .input-group input:not([readonly]) {
         width: 100%;
         padding: 12px;
         border: 1px solid #ccc;
         border-radius: 8px;
         font-size: var(--fs-input);
-        text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.12);
+        text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.12); /* sombra leve en valores de ejemplo */
     }
 
     #interestRate {
@@ -80,8 +74,10 @@
         border-bottom: 1px dashed #eee;
         font-size: var(--fs-result);
         flex-wrap: wrap;
+        gap: 6px 12px;
     }
-
+    .result-line:last-of-type { border-bottom: none; }
+    .result-line span:first-child { font-weight: 500; color: #333; }
     .result-line strong {
         color: #28a745;
         font-weight: bold;
@@ -90,28 +86,30 @@
         border-radius: 6px;
         text-shadow: 0.6px 0.6px 1.2px rgba(0,0,0,0.18);
     }
-
     .result-line.highlight strong {
         color: #007bff;
         background-color: #e6f2ff;
         font-size: calc(var(--fs-result) * 1.15);
     }
 
-    /* Ajustes móviles */
+    /* Móviles */
     @media (max-width: 600px) {
-        .simulador-prestamo-container {
-            padding: 14px;
-            margin: 10px;
-        }
-        .result-line {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .result-line strong {
-            width: 100%;
-            text-align: left;
-            margin-top: 4px;
-        }
+        .simulador-prestamo-container { padding: 14px; margin: 10px; }
+        .result-line { flex-direction: column; align-items: flex-start; }
+        .result-line strong { width: 100%; text-align: left; }
+    }
+
+    /* Modo oscuro automático */
+    @media (prefers-color-scheme: dark) {
+        .simulador-prestamo-container { background: #1e1f22; color: #e8e8e8; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+        .simulador-prestamo-container h1 { color: #66a3ff; border-color: #66a3ff; }
+        .simulador-prestamo-container h2 { color: #e0e0e0; border-color: #333; }
+        .input-group label { color: #ccc; }
+        .input-group input:not([readonly]) { background: #2a2b2f; border-color: #444; color: #e8e8e8; }
+        #interestRate { background: #2a2b2f; border-color: #666; color: #e8e8e8; }
+        .result-line { border-color: #2c2c2c; }
+        .result-line strong { background: #203a28; color: #7ddc8c; }
+        .result-line.highlight strong { background: #20334a; color: #7fb8ff; }
     }
 </style>
 </head>
@@ -123,17 +121,17 @@
     <h2>Datos de Entrada (Editables)</h2>
     <div class="input-group">
         <label for="loanAmount">Monto Solicitud Préstamo ($):</label>
-        <input type="number" id="loanAmount" value="3000000" min="1" oninput="calculateLoan()">
+        <input type="number" id="loanAmount" value="3000000" min="1" inputmode="numeric" oninput="calculateLoan()">
     </div>
 
     <div class="input-group">
         <label for="numPayments">Número de Cuotas (Máx. 18):</label>
-        <input type="number" id="numPayments" value="18" min="1" max="18" step="1" oninput="calculateLoan()">
+        <input type="number" id="numPayments" value="18" min="1" max="18" step="1" inputmode="numeric" oninput="calculateLoan()">
     </div>
 
     <div class="input-group">
         <label for="minimumSavings">Ahorro Mínimo Sugerido (Valor Extra por Cuota $):</label>
-        <input type="number" id="minimumSavings" value="55000" min="55000" oninput="calculateLoan()">
+        <input type="number" id="minimumSavings" value="55000" min="55000" inputmode="numeric" oninput="calculateLoan()">
     </div>
 
     <h2>Tasa de Interés Aplicada (Automático)</h2>
@@ -143,7 +141,6 @@
     </div>
 
     <h2>Resultados (Automáticos y No Editables)</h2>
-
     <div class="result-line">
         <span>Intereses por Cuota:</span>
         <strong id="interestPerPayment"></strong>
@@ -194,18 +191,18 @@
         }
 
         const MAX_PERIODS = 18;
+
+        // Tasa
         const ratePercent = getInterestRate(principal);
         const monthlyRate = ratePercent / 100;
         document.getElementById('interestRate').value = ratePercent.toFixed(2) + '%';
 
-        const formatter = new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0
-        });
+        // Formateador COP
+        const fmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
 
+        // Si principal no válido, limpiar
         if (principal <= 0) {
-            const zero = formatter.format(0);
+            const zero = fmt.format(0);
             document.getElementById('interestPerPayment').textContent = zero;
             document.getElementById('principalPerPayment').textContent = zero;
             document.getElementById('totalPayment').textContent = zero;
@@ -216,12 +213,31 @@
             return;
         }
 
+        // Validación: cuota principal por pago >= ahorro sugerido
         let minPeriodsBySavings = Math.ceil(principal / savings);
         minPeriodsBySavings = Math.min(Math.max(minPeriodsBySavings, 1), MAX_PERIODS);
         periods = Math.max(periods, minPeriodsBySavings);
         periods = Math.min(periods, MAX_PERIODS);
         periodsInput.value = periods;
 
+        // Cálculos
         const interestPerPayment = principal * monthlyRate;
         const principalPerPayment = principal / periods;
-        const
+        const totalPayment = principalPerPayment + interestPerPayment;
+        const totalRepayment = totalPayment * periods;
+        const totalEstimate = totalPayment + savings;
+
+        // Resultados
+        document.getElementById('interestPerPayment').textContent = fmt.format(interestPerPayment);
+        document.getElementById('principalPerPayment').textContent = fmt.format(principalPerPayment);
+        document.getElementById('totalPayment').textContent = fmt.format(totalPayment);
+        document.getElementById('totalRepayment').textContent = fmt.format(totalRepayment);
+        document.getElementById('totalEstimate').textContent = fmt.format(totalEstimate);
+    }
+
+    // Ejecutar al cargar y asegurar primer render
+    document.addEventListener('DOMContentLoaded', calculateLoan);
+    calculateLoan();
+</script>
+</body>
+</html>
