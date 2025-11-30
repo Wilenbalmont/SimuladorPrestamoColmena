@@ -1,0 +1,210 @@
+<style>
+    /* Estilos CSS */
+    .simulador-prestamo-container {
+        font-family: Arial, sans-serif;
+        max-width: 650px;
+        margin: 20px auto;
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .simulador-prestamo-container h1 {
+        text-align: center;
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 25px;
+    }
+    .simulador-prestamo-container h2 {
+        color: #333;
+        margin-top: 25px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+    }
+    .input-group, .result-line {
+        margin-bottom: 15px;
+    }
+    .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+    /* Estilo para los campos de entrada editables */
+    .input-group input:not([readonly]) {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    /* Estilo para el campo de Tasa de Interés (solo lectura) */
+    #interestRate {
+        background-color: #f0f0f0; 
+        border: 1px dashed #999;
+        color: #333;
+    }
+    .result-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px dashed #eee;
+    }
+    .result-line:last-of-type {
+        border-bottom: none;
+    }
+    .result-line span:first-child {
+        font-weight: 500;
+        color: #333;
+    }
+    .result-line strong {
+        color: #28a745; 
+        font-size: 1.1em;
+        font-weight: bold;
+        background-color: #e9f7eb;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+    .result-line.highlight strong {
+        color: #007bff; 
+        background-color: #e6f2ff;
+        font-size: 1.2em;
+    }
+</style>
+
+<div class="simulador-prestamo-container">
+    <h1>SIMULADOR DE PRÉSTAMO 💸</h1>
+
+    <h2>Datos de Entrada (Editables)</h2>
+    <div class="input-group">
+        <label for="loanAmount">Monto Solicitud Préstamo ($):</label>
+        <input type="number" id="loanAmount" value="3000000" min="1" oninput="calculateLoan()">
+    </div>
+
+    <div class="input-group">
+        <label for="numPayments">Número de Cuotas (Máx. 18):</label>
+        <input type="number" id="numPayments" value="18" min="1" max="18" step="1" oninput="calculateLoan()">
+    </div>
+
+    <div class="input-group">
+        <label for="minimumSavings">Ahorro Mínimo Sugerido (Valor Extra por Cuota $):</label>
+        <input type="number" id="minimumSavings" value="55000" min="0" oninput="calculateLoan()">
+    </div>
+
+    <h2>Tasa de Interés Aplicada (Automático)</h2>
+    <div class="input-group">
+        <label for="interestRate">Tasa de Interés Mensual (%):</label>
+        <input type="text" id="interestRate" value="1.2%" readonly>
+    </div>
+
+    <h2>Resultados (Automáticos y No Editables)</h2>
+
+    <div class="result-line">
+        <span>Intereses por Cuota:</span>
+        <strong id="interestPerPayment"></strong>
+    </div>
+    <div class="result-line">
+        <span>Valor Cuota (Principal):</span>
+        <strong id="principalPerPayment"></strong>
+    </div>
+    <div class="result-line">
+        <span>Valor Cuota + Intereses (Total a Pagar Mensual):</span>
+        <strong id="totalPayment"></strong>
+    </div>
+    <div class="result-line highlight">
+        <span>Proyección Pago Total (Cuotas + Intereses):</span>
+        <strong id="totalRepayment"></strong>
+    </div>
+    <div class="result-line highlight">
+        <span>Estimación Cuota Total + Ahorro Mínimo Sugerido:</span>
+        <strong id="totalEstimate"></strong>
+    </div>
+</div>
+
+<script>
+    // Lógica JavaScript
+    function getInterestRate(principal) {
+        if (principal === 0) {
+            return 0; 
+        } else if (principal < 500000) {
+            return 4.5;
+        } else if (principal < 1000000) {
+            return 4.0;
+        } else if (principal < 1500000) {
+            return 3.5;
+        } else if (principal < 2000000) {
+            return 3.0;
+        } else if (principal < 2500000) {
+            return 2.5;
+        } else if (principal < 3000000) {
+            return 2.0;
+        } else {
+            return 1.2; 
+        }
+    }
+
+    function calculateLoan() {
+        // Obtener las entradas
+        const principal = parseFloat(document.getElementById('loanAmount').value) || 0;
+        let periods = parseInt(document.getElementById('numPayments').value) || 1;
+        const savings = parseFloat(document.getElementById('minimumSavings').value) || 0;
+        
+        // Forzar el límite de cuotas a 18
+        const maxPeriods = 18;
+        if (periods > maxPeriods) {
+            periods = maxPeriods;
+            document.getElementById('numPayments').value = maxPeriods;
+        } else if (periods < 1) {
+            periods = 1;
+            document.getElementById('numPayments').value = 1;
+        }
+
+        // 1. CALCULAR TASA DE INTERÉS AUTOMÁTICA
+        const ratePercent = getInterestRate(principal);
+        const monthlyRate = ratePercent / 100;
+
+        // Actualizar el campo de solo lectura con la tasa calculada
+        document.getElementById('interestRate').value = ratePercent.toFixed(2) + '%';
+        
+        // Función para formatear a moneda local
+        const formatter = new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0
+        });
+
+        // Si las entradas no son válidas, limpiar resultados
+        if (principal <= 0 || periods <= 0) {
+            const zero = formatter.format(0);
+            document.getElementById('interestPerPayment').textContent = zero;
+            document.getElementById('principalPerPayment').textContent = zero;
+            document.getElementById('totalPayment').textContent = zero;
+            document.getElementById('totalRepayment').textContent = zero;
+            document.getElementById('totalEstimate').textContent = zero;
+            return;
+        }
+
+        // 2. CÁLCULOS FINALES
+        const interestPerPayment = principal * monthlyRate;
+        const principalPerPayment = principal / periods;
+        const totalPayment = principalPerPayment + interestPerPayment;
+        const totalRepayment = totalPayment * periods;
+        const totalEstimate = totalPayment + savings;
+
+        // 3. ACTUALIZAR EL HTML con los resultados
+        document.getElementById('interestPerPayment').textContent = formatter.format(interestPerPayment);
+        document.getElementById('principalPerPayment').textContent = formatter.format(principalPerPayment);
+        document.getElementById('totalPayment').textContent = formatter.format(totalPayment);
+        document.getElementById('totalRepayment').textContent = formatter.format(totalRepayment);
+        document.getElementById('totalEstimate').textContent = formatter.format(totalEstimate);
+    }
+
+    // Ejecutar el cálculo inicial al cargar la página
+    // Usamos DOMContentLoaded para asegurar que el script se ejecute tan pronto como el HTML esté disponible, lo cual es más rápido y compatible que window.onload.
+    document.addEventListener('DOMContentLoaded', calculateLoan);
+    // Para que el cálculo se ejecute inmediatamente después de pegar el código en el bloque (en algunos navegadores/entornos de WordPress):
+    calculateLoan();
+</script>
