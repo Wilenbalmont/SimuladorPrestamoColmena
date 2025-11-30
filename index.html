@@ -235,21 +235,20 @@
       const totalEstimateEl = document.getElementById('totalEstimate');
 
       const principal = parseFloat(principalInput.value) || 0;
-      let periods = parseInt(periodsInput.value) || 1;
+      // Leemos el valor y usamos 1 como fallback si está vacío
+      let periods = parseInt(periodsInput.value) || 1; 
       let savings = parseFloat(savingsInput.value);
 
       const MIN_SAVINGS = 55000;
       const MAX_PERIODS = 18;
 
-      // 1. VALIDACIÓN Y AJUSTE DE CUOTAS (1 a 18) - AJUSTA SI ES MENOR A 1 O MAYOR A 18
-      if (periods < 1) {
-        periods = 1;
-      }
-      if (periods > MAX_PERIODS) {
-        periods = MAX_PERIODS;
-      }
-      periodsInput.value = periods; // Asegura que el campo muestre el valor válido.
-      
+      // 1. Validar límites de Cuotas para CÁLCULO
+      if (periods < 1) periods = 1;
+      if (periods > MAX_PERIODS) periods = MAX_PERIODS;
+
+      // ** IMPORTANTE: Se ELIMINÓ la línea periodsInput.value = periods; **
+      // Ahora el script respeta la entrada del usuario y solo usa el valor 'periods' para los cálculos.
+
       // 2. Normalizar ahorro mínimo
       if (isNaN(savings) || savings < MIN_SAVINGS) {
         savings = MIN_SAVINGS;
@@ -276,9 +275,6 @@
         totalEstimateEl.textContent = zero;
         return;
       }
-
-      // ** NOTA IMPORTANTE: Se eliminó la lógica que sobreescribía automáticamente el número de cuotas (periodsInput.value = periods;)
-      // ** si no se cumplía la restricción del ahorro mínimo (periods <= principal / savings). Ahora el usuario puede elegir cualquier cuota entre 1 y 18. **
 
       // 4. Cálculos Finales
       const interestPerPayment = principal * monthlyRate;
