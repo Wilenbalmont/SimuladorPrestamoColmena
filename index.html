@@ -241,14 +241,14 @@
       const MIN_SAVINGS = 55000;
       const MAX_PERIODS = 18;
 
-      // 1. VALIDACIÓN Y AJUSTE DE CUOTAS (1 a 18)
+      // 1. VALIDACIÓN Y AJUSTE DE CUOTAS (1 a 18) - AJUSTA SI ES MENOR A 1 O MAYOR A 18
       if (periods < 1) {
         periods = 1;
       }
       if (periods > MAX_PERIODS) {
         periods = MAX_PERIODS;
       }
-      periodsInput.value = periods;
+      periodsInput.value = periods; // Asegura que el campo muestre el valor válido.
       
       // 2. Normalizar ahorro mínimo
       if (isNaN(savings) || savings < MIN_SAVINGS) {
@@ -277,21 +277,17 @@
         return;
       }
 
-      // 4. Aplicar restricción de periodos basada en ahorro (periodos <= principal / savings)
-      const minPeriodsBySavings = Math.ceil(principal / savings);
-      if (periods < minPeriodsBySavings) {
-        periods = Math.min(minPeriodsBySavings, MAX_PERIODS);
-        periodsInput.value = periods;
-      }
+      // ** NOTA IMPORTANTE: Se eliminó la lógica que sobreescribía automáticamente el número de cuotas (periodsInput.value = periods;)
+      // ** si no se cumplía la restricción del ahorro mínimo (periods <= principal / savings). Ahora el usuario puede elegir cualquier cuota entre 1 y 18. **
 
-      // 5. Cálculos Finales
+      // 4. Cálculos Finales
       const interestPerPayment = principal * monthlyRate;
       const principalPerPayment = principal / periods;
       const totalPayment = principalPerPayment + interestPerPayment;
       const totalRepayment = totalPayment * periods;
       const totalEstimate = totalPayment + savings;
 
-      // 6. Actualizar resultados
+      // 5. Actualizar resultados
       interestPerPaymentEl.textContent = fmt.format(interestPerPayment);
       principalPerPaymentEl.textContent = fmt.format(principalPerPayment);
       totalPaymentEl.textContent = fmt.format(totalPayment);
