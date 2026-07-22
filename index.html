@@ -6,229 +6,556 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Simulador de Préstamo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* VARIABLES CSS y DARK MODE */
+    /* ============ TOKENS ============ */
     :root {
-      --fs-h1: clamp(1.5rem, 5vw, 2.2rem);
-      --fs-h2: clamp(1.2rem, 4vw, 1.5rem);
-      --fs-label: clamp(1rem, 3.5vw, 1.2rem);
-      --fs-input: clamp(1rem, 4vw, 1.2rem);
-      --fs-result: clamp(1rem, 4vw, 1.2rem);
-      --color-bg: #ffffff;
-      --color-text: #000000;
-      --color-input-bg: #ffffff;
-      --color-input-text: #000000;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+      --bg: #FAF5E9;
+      --surface: #FFFFFF;
+      --surface-soft: #FBF3E0;
+      --ink: #2A1B0E;
+      --ink-soft: #6B5B47;
+      --honey: #E4A030;
+      --honey-deep: #B4791C;
+      --honey-pale: #F6DDAA;
+      --clover: #5C7A4A;
+      --alert: #B4453A;
+      --alert-pale: #F5E1DD;
+      --line: #E7DCC5;
+      --shadow: 0 1px 2px rgba(42,27,14,.05), 0 12px 28px -16px rgba(42,27,14,.28);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --color-bg: #1e1e1e;
-        --color-text: #f0f0f0;
-        --color-input-bg: #2c2c2c;
-        --color-input-text: #ffffff;
-      }
-      .simulador-prestamo-container {
-        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
-      }
-      .result-line strong {
-        text-shadow: none;
-      }
-      .result-line.highlight strong {
-        background-color: #004085;
-        color: #ffffff;
+        --bg: #1B140B;
+        --surface: #241B10;
+        --surface-soft: #2E2313;
+        --ink: #F3E9D6;
+        --ink-soft: #C9B99C;
+        --honey: #F0B94E;
+        --honey-deep: #F6D089;
+        --honey-pale: #4A3A1E;
+        --clover: #8FB679;
+        --alert: #E08276;
+        --alert-pale: #3A211D;
+        --line: #3A2E1B;
+        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -16px rgba(0,0,0,.5);
       }
     }
 
-    /* ESTILOS GENERALES Y LAYOUT */
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      padding: 0;
-      background-color: var(--color-bg);
-      color: var(--color-text);
-      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
     }
 
-    .simulador-prestamo-container {
-      max-width: 720px;
-      width: 100%;
-      margin: 20px auto;
-      background: var(--color-bg);
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    :focus-visible {
+      outline: 2px solid var(--honey-deep);
+      outline-offset: 3px;
     }
 
-    .simulador-prestamo-container h1 {
-      text-align: center;
-      color: #007bff;
-      border-bottom: 2px solid #007bff;
-      padding-bottom: 10px;
-      margin-bottom: 22px;
-      font-size: var(--fs-h1);
+    .page {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: clamp(20px, 4vw, 44px) 20px 60px;
     }
 
-    .simulador-prestamo-container h2 {
-      color: var(--color-text);
-      margin-top: 24px;
-      border-bottom: 1px solid #888;
-      padding-bottom: 6px;
-      font-size: var(--fs-h2);
+    /* ============ HERO ============ */
+    .hero {
+      max-width: 640px;
+      margin-bottom: clamp(24px, 4vw, 40px);
     }
 
-    .input-group, .result-line {
-      margin-bottom: 14px;
-    }
-
-    /* ESTILOS DE ENTRADAS */
-    .input-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: bold;
-      color: var(--color-text);
-      font-size: var(--fs-label);
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 12px 14px;
-      box-sizing: border-box;
-      border: 1px solid #cfcfcf;
-      border-radius: 8px;
-      font-size: var(--fs-input);
-      line-height: 1.3;
-      background-color: var(--color-input-bg);
-      color: var(--color-input-text);
-      text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.12);
-    }
-
-    /* Campo de solo lectura (Tasa de Interés) */
-    .input-group input[readonly] {
-      background-color: #f0f0f0;
-      border: 1px dashed #999;
-      color: #333;
-    }
-
-    /* ESTILOS DE RESULTADOS */
-    .result-line {
-      display: flex;
-      justify-content: space-between;
+    .eyebrow {
+      display: inline-flex;
       align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px dashed #ccc;
-      font-size: var(--fs-result);
+      gap: 8px;
+      margin: 0 0 12px;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--honey-deep);
+    }
+
+    .icon-hex {
+      width: 14px;
+      height: 16px;
+      background: var(--honey);
+      clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+      flex: none;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.9rem, 4.4vw, 2.6rem);
+      letter-spacing: -0.01em;
+      margin: 0 0 10px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 1.02rem;
+      line-height: 1.5;
+    }
+
+    /* ============ LAYOUT ============ */
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: clamp(20px, 3vw, 28px);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-results {
+      position: sticky;
+      top: 20px;
+    }
+
+    @media (max-width: 860px) {
+      .panel-results { position: static; }
+    }
+
+    .panel h2 {
+      font-family: var(--font-body);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin: 0 0 20px;
+    }
+
+    /* ============ CAMPOS ============ */
+    .field { margin-bottom: 26px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .field-head label {
+      font-weight: 700;
+      font-size: .95rem;
+    }
+
+    .field-value {
+      font-weight: 700;
+      font-size: 1.05rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--honey-deep);
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--honey-deep);
+      margin: 4px 0 10px;
+    }
+
+    .field-number {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
+      font: 600 1rem var(--font-body);
+    }
+
+    .field-caption {
+      display: block;
+      margin-top: 8px;
+      font-size: .82rem;
+      color: var(--ink-soft);
+    }
+
+    .input-warning {
+      display: block;
+      margin-top: 8px;
+      color: var(--alert);
+      font-size: .85rem;
+      font-weight: 700;
+      min-height: 1.1em;
+    }
+
+    /* ============ SELECTOR EN PANAL ============ */
+    .hive-selector {
+      display: flex;
       flex-wrap: wrap;
-      gap: 6px 12px;
+      gap: 5px;
+      padding: 14px;
+      background: var(--surface-soft);
+      border-radius: 14px;
+      margin-bottom: 8px;
     }
 
-    .result-line:last-of-type { border-bottom: none; }
-    .result-line span { font-weight: 500; color: var(--color-text); }
-
-    .result-line strong {
-      color: #28a745;
-      font-weight: bold;
-      background-color: #e9f7eb;
-      padding: 6px 10px;
-      border-radius: 6px;
-      text-shadow: 0.6px 0.6px 1.2px rgba(0,0,0,0.18);
+    .hex-cell {
+      width: 32px;
+      height: 37px;
+      clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+      background: var(--line);
+      color: var(--ink-soft);
+      border: none;
+      padding: 0;
+      font: 700 .66rem var(--font-body);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s ease, color .15s ease, transform .15s ease;
     }
 
-    .result-line.highlight strong {
-      color: #007bff;
-      background-color: #e6f2ff;
-      font-size: calc(var(--fs-result) * 1.15);
+    .hex-cell:hover { transform: translateY(-2px); }
+
+    .hex-cell.active {
+      background: var(--honey);
+      color: var(--ink);
     }
 
-    /* RESPONSIVIDAD */
-    @media (max-width: 600px) {
-      .simulador-prestamo-container {
-        padding: 16px;
-        margin: 10px;
-      }
-      .result-line {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .result-line strong {
-        width: 100%;
-        text-align: left;
-        margin-top: 4px;
-      }
+    .hex-cell.preview {
+      background: var(--honey-pale);
+      color: var(--honey-deep);
+    }
+
+    /* ============ TASA ============ */
+    .rate-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .rate-badge .icon-hex {
+      width: 22px;
+      height: 25px;
+    }
+
+    .rate-badge-label {
+      margin: 0;
+      font-size: .78rem;
+      color: var(--ink-soft);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .rate-badge-value {
+      margin: 2px 0 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ============ RESULTADOS ============ */
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .result-card {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .result-label {
+      margin: 0 0 6px;
+      font-size: .76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--ink-soft);
+    }
+
+    .result-value {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-hero {
+      background: linear-gradient(135deg, var(--honey-pale), var(--surface-soft));
+      border: 1px solid var(--honey-pale);
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin: 14px 0;
+    }
+
+    .result-hero-label {
+      margin: 0 0 6px;
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--honey-deep);
+    }
+
+    .result-hero-value {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.9rem, 5vw, 2.6rem);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-card--savings .result-label { color: var(--clover); }
+
+    @keyframes pulseValue {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .pulse { animation: pulseValue .3s ease; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pulse, .hex-cell, input[type="range"] { animation: none !important; transition: none !important; }
+    }
+
+    .foot-note {
+      max-width: 640px;
+      margin-top: 26px;
+    }
+
+    .foot-note p {
+      margin: 0;
+      font-size: .85rem;
+      color: var(--ink-soft);
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <div class="simulador-prestamo-container">
-    <h1>SIMULADOR DE PRÉSTAMO 💸</h1>
+  <div class="page">
+    <header class="hero">
+      <p class="eyebrow"><span class="icon-hex" aria-hidden="true"></span> Ahorro y crédito</p>
+      <h1>Simulador de préstamo</h1>
+      <p>Ajusta el monto y el número de cuotas. Cada celda del panal representa un pago — elige la tuya y mira el resultado al instante.</p>
+    </header>
 
-    <h2>Datos de Entrada (Editables)</h2>
-    <div class="input-group">
-      <label for="loanAmount">Monto Solicitud Préstamo ($):</label>
-      <input type="number" id="loanAmount" value="3000000" min="1" oninput="calculateLoan()" />
-    </div>
+    <main class="layout">
+      <section class="panel" aria-label="Datos del préstamo">
+        <h2>Datos del préstamo</h2>
 
-    <div class="input-group">
-      <label for="numPayments">Número de Cuotas (1 a 18):</label>
-      <input
-        type="number"
-        id="numPayments"
-        value="18"
-        min="1"
-        max="18"
-        step="1"
-        oninput="calculateLoan()"
-      />
-    </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="loanAmount">Monto solicitado</label>
+            <output class="field-value" id="loanAmountDisplay" for="loanAmount">$0</output>
+          </div>
+          <input type="range" id="loanAmountRange" min="100000" max="10000000" step="50000" value="3000000" aria-hidden="true" tabindex="-1">
+          <input type="number" id="loanAmount" min="1" value="3000000" class="field-number" aria-label="Monto solicitado en pesos colombianos">
+        </div>
 
-    <div class="input-group">
-      <label for="minimumSavings">Ahorro Mínimo Sugerido (Valor Extra por Cuota $):</label>
-      <input type="number" id="minimumSavings" value="55000" min="55000" oninput="calculateLoan()" />
-    </div>
+        <div class="field">
+          <div class="field-head">
+            <label id="periodsLabel">Número de cuotas</label>
+            <output class="field-value" id="periodsDisplay" for="numPayments">18 cuotas</output>
+          </div>
+          <div class="hive-selector" id="hiveSelector" role="group" aria-labelledby="periodsLabel"></div>
+          <input type="number" id="numPayments" min="1" max="32" value="18" class="field-number" aria-label="Número exacto de cuotas, de 1 a 32">
+          <span class="field-caption">O escribe el número exacto arriba</span>
+          <small id="periodsWarning" class="input-warning" role="status"></small>
+        </div>
 
-    <h2>Tasa de Interés Aplicada (Automático)</h2>
-    <div class="input-group">
-      <label for="interestRate">Tasa de Interés Mensual (%):</label>
-      <input type="text" id="interestRate" value="1.2%" readonly />
-    </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="minimumSavings">Ahorro adicional sugerido</label>
+            <output class="field-value" id="savingsDisplay" for="minimumSavings">$55.000</output>
+          </div>
+          <input type="range" id="savingsRange" min="55000" max="500000" step="5000" value="55000" aria-hidden="true" tabindex="-1">
+          <input type="number" id="minimumSavings" min="55000" value="55000" class="field-number" aria-label="Ahorro adicional sugerido por cuota">
+          <small id="savingsWarning" class="input-warning" role="status"></small>
+        </div>
 
-    <h2>Resultados (Automáticos y No Editables)</h2>
-    <div class="result-line">
-      <span>Intereses por Cuota:</span>
-      <strong id="interestPerPayment"></strong>
-    </div>
-    <div class="result-line">
-      <span>Valor Cuota (Principal):</span>
-      <strong id="principalPerPayment"></strong>
-    </div>
-    <div class="result-line">
-      <span>Valor Cuota + Intereses (Total a Pagar Mensual):</span>
-      <strong id="totalPayment"></strong>
-    </div>
-    <div class="result-line highlight">
-      <span>Proyección Pago Total (Cuotas + Intereses):</span>
-      <strong id="totalRepayment"></strong>
-    </div>
-    <div class="result-line highlight">
-      <span>Estimación Cuota Total + Ahorro Mínimo Sugerido:</span>
-      <strong id="totalEstimate"></strong>
-    </div>
+        <div class="rate-badge">
+          <span class="icon-hex" aria-hidden="true"></span>
+          <div>
+            <p class="rate-badge-label">Tasa mensual aplicada</p>
+            <p class="rate-badge-value" id="interestRateValue">1.20%</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel-results" aria-label="Resultados del cálculo" aria-live="polite">
+        <h2>Resultado de la simulación</h2>
+
+        <div class="result-grid">
+          <div class="result-card">
+            <p class="result-label">Interés por cuota</p>
+            <p class="result-value" id="interestPerPayment">$0</p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Capital por cuota</p>
+            <p class="result-value" id="principalPerPayment">$0</p>
+          </div>
+        </div>
+
+        <div class="result-hero">
+          <p class="result-hero-label">Pago mensual total</p>
+          <p class="result-hero-value" id="totalPayment">$0</p>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-card">
+            <p class="result-label">Total a pagar (todas las cuotas)</p>
+            <p class="result-value" id="totalRepayment">$0</p>
+          </div>
+          <div class="result-card result-card--savings">
+            <p class="result-label">Cuota + ahorro sugerido</p>
+            <p class="result-value" id="totalEstimate">$0</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot-note">
+      <p>Simulación informativa. La tasa mensual se ajusta automáticamente según el monto solicitado y no requiere que la ingreses manualmente.</p>
+    </footer>
   </div>
 
   <script>
+    const MIN_SAVINGS = 55000;
+    const MAX_PERIODS = 32;
+
+    const RATE_TIERS = [
+      { max: 500000, rate: 4.5 },
+      { max: 1000000, rate: 4.0 },
+      { max: 1500000, rate: 3.5 },
+      { max: 2000000, rate: 3.0 },
+      { max: 2500000, rate: 2.5 },
+      { max: 3000000, rate: 2.0 },
+    ];
+
+    const fmt = new Intl.NumberFormat('es-CO', {
+      style: 'currency', currency: 'COP', minimumFractionDigits: 0
+    });
+
     function getInterestRate(principal) {
-      if (principal === 0) return 0;
-      if (principal < 500000) return 4.5;
-      if (principal < 1000000) return 4.0;
-      if (principal < 1500000) return 3.5;
-      if (principal < 2000000) return 3.0;
-      if (principal < 2500000) return 2.5;
-      if (principal < 3000000) return 2.0;
-      return 1.2;
+      if (principal <= 0) return 0;
+      const tier = RATE_TIERS.find(t => principal < t.max);
+      return tier ? tier.rate : 1.2;
+    }
+
+    function setResult(el, text) {
+      el.textContent = text;
+      el.classList.remove('pulse');
+      void el.offsetWidth; // reinicia la animación
+      el.classList.add('pulse');
+    }
+
+    /* ===== Selector en forma de panal para las cuotas ===== */
+    function buildHiveSelector() {
+      const container = document.getElementById('hiveSelector');
+      const numPayments = document.getElementById('numPayments');
+      for (let i = 1; i <= MAX_PERIODS; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'hex-cell';
+        btn.dataset.value = String(i);
+        btn.textContent = i;
+        btn.setAttribute('aria-label', `${i} cuota${i > 1 ? 's' : ''}`);
+        btn.title = `${i} cuota${i > 1 ? 's' : ''}`;
+        btn.addEventListener('click', () => {
+          numPayments.value = i;
+          calculateLoan();
+        });
+        btn.addEventListener('mouseenter', () => previewHive(i));
+        btn.addEventListener('focus', () => previewHive(i));
+        btn.addEventListener('blur', () => previewHive(null));
+        container.appendChild(btn);
+      }
+      container.addEventListener('mouseleave', () => previewHive(null));
+    }
+
+    function previewHive(hoverValue) {
+      const selected = parseInt(document.getElementById('numPayments').value) || 0;
+      const cells = document.querySelectorAll('#hiveSelector .hex-cell');
+      cells.forEach(cell => {
+        const v = parseInt(cell.dataset.value);
+        if (hoverValue !== null) {
+          cell.classList.toggle('preview', v <= hoverValue);
+          cell.classList.toggle('active', false);
+        } else {
+          cell.classList.remove('preview');
+          cell.classList.toggle('active', v <= selected);
+        }
+      });
     }
 
     function calculateLoan() {
-      const principalInput = document.getElementById('loanAmount');
-      const periodsInput = document.getElementById('numPayments');
-      const savingsInput = document.getElementById('minimumSavings');
+      const loanAmountEl = document.getElementById('loanAmount');
+      const loanAmountRangeEl = document.getElementById('loanAmountRange');
+      const numPaymentsEl = document.getElementById('numPayments');
+      const savingsEl = document.getElementById('minimumSavings');
+      const savingsRangeEl = document.getElementById('savingsRange');
+      const periodsWarning = document.getElementById('periodsWarning');
+      const savingsWarning = document.getElementById('savingsWarning');
+
+      // --- Monto ---
+      const principal = parseFloat(loanAmountEl.value) || 0;
+      loanAmountRangeEl.value = principal; // el navegador ajusta el thumb dentro de min/max
+      document.getElementById('loanAmountDisplay').textContent = fmt.format(principal);
+
+      // --- Cuotas: el número escrito manda; el panal solo refleja/edita ---
+      const rawPeriods = parseInt(numPaymentsEl.value);
+      let periods = isNaN(rawPeriods) || rawPeriods < 1 ? 1 : rawPeriods;
+      if (periods > MAX_PERIODS) {
+        periodsWarning.textContent = `Máximo ${MAX_PERIODS} cuotas — se calculará con ${MAX_PERIODS}.`;
+        periods = MAX_PERIODS;
+      } else {
+        periodsWarning.textContent = '';
+      }
+      document.getElementById('periodsDisplay').textContent = `${periods} cuota${periods > 1 ? 's' : ''}`;
+      previewHive(null);
+
+      // --- Ahorro: se corrige solo al salir del campo, nunca mientras se escribe ---
+      let savings = parseFloat(savingsEl.value);
+      if (isNaN(savings) || savings < MIN_SAVINGS) {
+        savings = MIN_SAVINGS;
+        savingsWarning.textContent = `El ahorro mínimo sugerido es ${fmt.format(MIN_SAVINGS)}.`;
+      } else {
+        savingsWarning.textContent = '';
+      }
+      savingsRangeEl.value = parseFloat(savingsEl.value) || MIN_SAVINGS;
+      document.getElementById('savingsDisplay').textContent = fmt.format(savings);
+
+      // --- Tasa ---
+      const ratePercent = getInterestRate(principal);
+      const monthlyRate = ratePercent / 100;
+      document.getElementById('interestRateValue').textContent = ratePercent.toFixed(2) + '%';
 
       const interestPerPaymentEl = document.getElementById('interestPerPayment');
       const principalPerPaymentEl = document.getElementById('principalPerPayment');
@@ -236,66 +563,48 @@
       const totalRepaymentEl = document.getElementById('totalRepayment');
       const totalEstimateEl = document.getElementById('totalEstimate');
 
-      const principal = parseFloat(principalInput.value) || 0;
-      // Leemos el valor y usamos 1 como fallback si está vacío
-      let periods = parseInt(periodsInput.value) || 1; 
-      let savings = parseFloat(savingsInput.value);
-
-      const MIN_SAVINGS = 55000;
-      const MAX_PERIODS = 18;
-
-      // 1. Validar límites de Cuotas para CÁLCULO
-      if (periods < 1) periods = 1;
-      if (periods > MAX_PERIODS) periods = MAX_PERIODS;
-
-      // ** IMPORTANTE: Se ELIMINÓ la línea periodsInput.value = periods; **
-      // Ahora el script respeta la entrada del usuario y solo usa el valor 'periods' para los cálculos.
-
-      // 2. Normalizar ahorro mínimo
-      if (isNaN(savings) || savings < MIN_SAVINGS) {
-        savings = MIN_SAVINGS;
-        savingsInput.value = MIN_SAVINGS;
-      }
-
-      // 3. Calcular Tasa
-      const ratePercent = getInterestRate(principal);
-      const monthlyRate = ratePercent / 100;
-      document.getElementById('interestRate').value = ratePercent.toFixed(2) + '%';
-
-      // Formateador COP
-      const fmt = new Intl.NumberFormat('es-CO', {
-        style: 'currency', currency: 'COP', minimumFractionDigits: 0
-      });
-
-      // Si principal no válido, limpiar resultados y salir
       if (principal <= 0) {
         const zero = fmt.format(0);
-        interestPerPaymentEl.textContent = zero;
-        principalPerPaymentEl.textContent = zero;
-        totalPaymentEl.textContent = zero;
-        totalRepaymentEl.textContent = zero;
-        totalEstimateEl.textContent = zero;
+        [interestPerPaymentEl, principalPerPaymentEl, totalPaymentEl, totalRepaymentEl, totalEstimateEl]
+          .forEach(el => { el.textContent = zero; });
         return;
       }
 
-      // 4. Cálculos Finales
       const interestPerPayment = principal * monthlyRate;
       const principalPerPayment = principal / periods;
       const totalPayment = principalPerPayment + interestPerPayment;
       const totalRepayment = totalPayment * periods;
       const totalEstimate = totalPayment + savings;
 
-      // 5. Actualizar resultados
-      interestPerPaymentEl.textContent = fmt.format(interestPerPayment);
-      principalPerPaymentEl.textContent = fmt.format(principalPerPayment);
-      totalPaymentEl.textContent = fmt.format(totalPayment);
-      totalRepaymentEl.textContent = fmt.format(totalRepayment);
-      totalEstimateEl.textContent = fmt.format(totalEstimate);
+      setResult(interestPerPaymentEl, fmt.format(interestPerPayment));
+      setResult(principalPerPaymentEl, fmt.format(principalPerPayment));
+      setResult(totalPaymentEl, fmt.format(totalPayment));
+      setResult(totalRepaymentEl, fmt.format(totalRepayment));
+      setResult(totalEstimateEl, fmt.format(totalEstimate));
     }
 
-    // Inicializar y asegurar que los cálculos se ejecuten al cargar
+    function normalizeSavings() {
+      calculateLoan();
+    }
+
+    /* ===== Sincronía deslizadores <-> campos numéricos ===== */
+    document.getElementById('loanAmountRange').addEventListener('input', (e) => {
+      document.getElementById('loanAmount').value = e.target.value;
+      calculateLoan();
+    });
+    document.getElementById('savingsRange').addEventListener('input', (e) => {
+      document.getElementById('minimumSavings').value = e.target.value;
+      calculateLoan();
+    });
+    document.getElementById('loanAmount').addEventListener('input', calculateLoan);
+    document.getElementById('numPayments').addEventListener('input', calculateLoan);
+    document.getElementById('minimumSavings').addEventListener('input', calculateLoan);
+    document.getElementById('minimumSavings').addEventListener('blur', normalizeSavings);
+
+    buildHiveSelector();
     document.addEventListener('DOMContentLoaded', calculateLoan);
     window.addEventListener('load', calculateLoan);
+    calculateLoan();
   </script>
 </body>
 </html>
