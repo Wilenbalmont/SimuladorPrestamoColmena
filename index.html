@@ -27,7 +27,10 @@
       --alert: #B4453A;
       --alert-pale: #F5E1DD;
       --line: #E7DCC5;
-      --shadow: 0 1px 2px rgba(42,27,14,.05), 0 12px 28px -16px rgba(42,27,14,.28);
+      
+      /* Sombras mejoradas para efecto flotante */
+      --shadow-soft: 0 1px 2px rgba(42,27,14,.05), 0 12px 28px -16px rgba(42,27,14,.28);
+      --shadow-float: 0 25px 50px -12px rgba(42, 27, 14, 0.15), 0 0 0 1px rgba(228, 160, 48, 0.05);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -44,7 +47,8 @@
         --alert: #E08276;
         --alert-pale: #3A211D;
         --line: #3A2E1B;
-        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -16px rgba(0,0,0,.5);
+        --shadow-soft: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -16px rgba(0,0,0,.5);
+        --shadow-float: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(240, 185, 78, 0.05);
       }
     }
 
@@ -128,17 +132,19 @@
       border: 1px solid var(--line);
       border-radius: 20px;
       padding: clamp(20px, 3vw, 28px);
-      box-shadow: var(--shadow);
-      transition: box-shadow 0.3s ease;
+      box-shadow: var(--shadow-soft);
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
     }
 
+    /* La tarjeta de resultados flota por encima */
     .panel-results {
       position: sticky;
       top: 20px;
+      box-shadow: var(--shadow-float);
     }
 
     @media (max-width: 860px) {
-      .panel-results { position: static; }
+      .panel-results { position: static; box-shadow: var(--shadow-soft); }
     }
 
     .panel h2 {
@@ -157,7 +163,7 @@
 
     .field-head {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 10px;
@@ -168,6 +174,13 @@
       font-size: .95rem;
     }
 
+    /* Contenedor del valor + anillo de progreso */
+    .field-value-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .field-value {
       font-weight: 800;
       font-size: 1.05rem;
@@ -176,7 +189,30 @@
       white-space: nowrap;
     }
 
-    /* Sliders Personalizados (Cross-Browser) */
+    /* Anillo SVG de progreso */
+    .progress-ring {
+      position: relative;
+      width: 36px;
+      height: 36px;
+    }
+    .progress-ring svg {
+      transform: rotate(-90deg);
+    }
+    .progress-ring__circle {
+      stroke-dasharray: 100.53; /* 2 * PI * 16 */
+      stroke-dashoffset: 100.53;
+      transition: stroke-dashoffset 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .progress-ring__text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--honey-deep);
+    }
+
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
@@ -203,7 +239,7 @@
     }
     
     input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.1);
+      transform: scale(1.15);
       border-color: var(--honey-deep);
     }
 
@@ -250,38 +286,41 @@
       min-height: 1.1em;
     }
 
-    /* ============ SELECTOR EN PANAL ============ */
+    /* ============ SELECTOR EN PANAL (32 Celdas) ============ */
     .hive-selector {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 4px;
       padding: 14px;
       background: var(--surface-soft);
       border-radius: 14px;
       margin-bottom: 8px;
+      justify-content: center;
     }
 
     .hex-cell {
-      width: 32px;
-      height: 37px;
+      width: 30px; /* Ligeramente más pequeñas para que 32 quepan bien */
+      height: 34px;
       clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
       background: var(--line);
       color: var(--ink-soft);
       border: none;
       padding: 0;
-      font: 700 .66rem var(--font-body);
+      font: 700 .64rem var(--font-body);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background .15s ease, color .15s ease, transform .15s ease;
+      transition: background .15s ease, color .15s ease, transform .15s cubic-bezier(0.34, 1.56, 0.64, 1); /* Rebote */
     }
 
-    .hex-cell:hover { transform: translateY(-2px); }
+    .hex-cell:hover { transform: translateY(-3px) scale(1.05); }
 
     .hex-cell.active {
       background: var(--honey);
       color: var(--surface);
+      transform: scale(1.1); /* Efecto Pop */
+      z-index: 2;
     }
 
     .hex-cell.preview {
@@ -334,11 +373,12 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 14px 16px;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .result-card:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(42,27,14,0.08);
     }
 
     .result-label {
@@ -362,12 +402,13 @@
       background: linear-gradient(135deg, var(--honey-pale), var(--surface-soft));
       border: 1px solid var(--honey-pale);
       border-radius: 16px;
-      padding: 20px 22px;
+      padding: 24px;
       margin: 14px 0;
+      text-align: center; /* Centrado para mayor protagonismo */
     }
 
     .result-hero-label {
-      margin: 0 0 6px;
+      margin: 0 0 8px;
       font-size: .8rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -379,9 +420,10 @@
       margin: 0;
       font-family: var(--font-display);
       font-weight: 600;
-      font-size: clamp(1.9rem, 5vw, 2.6rem);
+      font-size: clamp(2.2rem, 6vw, 3rem); /* Más grande para impacto */
       font-variant-numeric: tabular-nums;
       color: var(--ink);
+      text-shadow: 0 2px 4px rgba(228, 160, 48, 0.1);
     }
 
     .result-card--savings .result-label { color: var(--clover); }
@@ -428,7 +470,9 @@
         <div class="field">
           <div class="field-head">
             <label for="loanAmount">Monto solicitado</label>
-            <output class="field-value" id="loanAmountDisplay" for="loanAmount">$0</output>
+            <div class="field-value-group">
+              <output class="field-value" id="loanAmountDisplay" for="loanAmount">$0</output>
+            </div>
           </div>
           <input type="range" id="loanAmountRange" min="100000" max="10000000" step="50000" value="3000000" aria-hidden="true" tabindex="-1">
           <input type="number" id="loanAmount" min="1" value="3000000" class="field-number" aria-label="Monto solicitado en pesos colombianos">
@@ -437,7 +481,17 @@
         <div class="field">
           <div class="field-head">
             <label id="periodsLabel">Número de cuotas</label>
-            <output class="field-value" id="periodsDisplay" for="numPayments">18 cuotas</output>
+            <div class="field-value-group">
+              <output class="field-value" id="periodsDisplay" for="numPayments">18 cuotas</output>
+              <!-- Anillo de Progreso SVG -->
+              <div class="progress-ring" aria-hidden="true">
+                <svg width="36" height="36">
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="var(--line)" stroke-width="3"></circle>
+                  <circle class="progress-ring__circle" id="progressRing" cx="18" cy="18" r="16" fill="none" stroke="var(--honey)" stroke-width="3" stroke-linecap="round"></circle>
+                </svg>
+                <span class="progress-ring__text" id="ringText">18</span>
+              </div>
+            </div>
           </div>
           <div class="hive-selector" id="hiveSelector" role="group" aria-labelledby="periodsLabel"></div>
           <input type="number" id="numPayments" min="1" max="32" value="18" class="field-number" aria-label="Número exacto de cuotas, de 1 a 32">
@@ -448,7 +502,9 @@
         <div class="field">
           <div class="field-head">
             <label for="minimumSavings">Ahorro adicional sugerido</label>
-            <output class="field-value" id="savingsDisplay" for="minimumSavings">$55.000</output>
+            <div class="field-value-group">
+              <output class="field-value" id="savingsDisplay" for="minimumSavings">$55.000</output>
+            </div>
           </div>
           <input type="range" id="savingsRange" min="55000" max="500000" step="5000" value="55000" aria-hidden="true" tabindex="-1">
           <input type="number" id="minimumSavings" min="55000" value="55000" class="field-number" aria-label="Ahorro adicional sugerido por cuota">
@@ -520,11 +576,16 @@
       totalPayment: document.getElementById('totalPayment'),
       totalRepayment: document.getElementById('totalRepayment'),
       totalEstimate: document.getElementById('totalEstimate'),
-      hiveSelector: document.getElementById('hiveSelector')
+      hiveSelector: document.getElementById('hiveSelector'),
+      progressRing: document.getElementById('progressRing'),
+      ringText: document.getElementById('ringText')
     };
 
     const MIN_SAVINGS = 55000;
     const MAX_PERIODS = 32;
+
+    // Constante para la circunferencia del anillo (2 * PI * r)
+    const RING_CIRCUMFERENCE = 2 * Math.PI * 16;
 
     const RATE_TIERS = [
       { max: 500000, rate: 4.5 },
@@ -552,7 +613,7 @@
       el.classList.add('pulse');
     }
 
-    // ============ Selector en forma de panal ============
+    // ============ Selector en forma de panal (32 celdas) ============
     function buildHiveSelector() {
       for (let i = 1; i <= MAX_PERIODS; i++) {
         const btn = document.createElement('button');
@@ -591,6 +652,14 @@
       });
     }
 
+    // ============ Actualizar Anillo de Progreso ============
+    function updateProgressRing(periods) {
+      const progress = periods / MAX_PERIODS;
+      const offset = RING_CIRCUMFERENCE - (progress * RING_CIRCUMFERENCE);
+      DOM.progressRing.style.strokeDashoffset = offset;
+      DOM.ringText.textContent = periods;
+    }
+
     // ============ Lógica Principal ============
     function calculateLoan() {
       // --- Monto ---
@@ -608,6 +677,7 @@
         DOM.periodsWarning.textContent = '';
       }
       DOM.periodsDisplay.textContent = `${periods} cuota${periods > 1 ? 's' : ''}`;
+      updateProgressRing(periods); // Actualizamos el anillo
       previewHive(null);
 
       // --- Ahorro ---
@@ -671,7 +741,7 @@
 
     // Inicialización
     buildHiveSelector();
-    calculateLoan(); // Un solo llamado inicial es suficiente
+    calculateLoan();
   </script>
 </body>
 </html>
