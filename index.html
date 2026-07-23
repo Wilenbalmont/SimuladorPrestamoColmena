@@ -5,7 +5,7 @@
      crossorigin="anonymous"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simulador de Préstamo</title>
+  <title>Simulador de Préstamo Premium</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -56,6 +56,7 @@
       color: var(--ink);
       font-family: var(--font-body);
       -webkit-font-smoothing: antialiased;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     :focus-visible {
@@ -128,6 +129,7 @@
       border-radius: 20px;
       padding: clamp(20px, 3vw, 28px);
       box-shadow: var(--shadow);
+      transition: box-shadow 0.3s ease;
     }
 
     .panel-results {
@@ -167,27 +169,69 @@
     }
 
     .field-value {
-      font-weight: 700;
+      font-weight: 800;
       font-size: 1.05rem;
       font-variant-numeric: tabular-nums;
       color: var(--honey-deep);
       white-space: nowrap;
     }
 
+    /* Sliders Personalizados (Cross-Browser) */
     input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
       width: 100%;
-      accent-color: var(--honey-deep);
-      margin: 4px 0 10px;
+      height: 6px;
+      background: var(--line);
+      border-radius: 10px;
+      outline: none;
+      margin: 6px 0 12px;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      background: var(--surface);
+      border: 3px solid var(--honey);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(42,27,14,0.2);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      border-color: var(--honey-deep);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      background: var(--surface);
+      border: 3px solid var(--honey);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(42,27,14,0.2);
     }
 
     .field-number {
       width: 100%;
-      padding: 11px 13px;
+      padding: 12px 14px;
       border: 1px solid var(--line);
       border-radius: 10px;
       background: var(--surface);
       color: var(--ink);
-      font: 600 1rem var(--font-body);
+      font: 700 1rem var(--font-body);
+      font-variant-numeric: tabular-nums;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field-number:focus {
+      border-color: var(--honey);
+      box-shadow: 0 0 0 3px rgba(228, 160, 48, 0.15);
     }
 
     .field-caption {
@@ -237,7 +281,7 @@
 
     .hex-cell.active {
       background: var(--honey);
-      color: var(--ink);
+      color: var(--surface);
     }
 
     .hex-cell.preview {
@@ -275,6 +319,7 @@
       font-size: 1.15rem;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
+      color: var(--ink);
     }
 
     /* ============ RESULTADOS ============ */
@@ -289,6 +334,11 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 14px 16px;
+      transition: transform 0.2s ease;
+    }
+
+    .result-card:hover {
+      transform: translateY(-2px);
     }
 
     .result-label {
@@ -305,6 +355,7 @@
       font-size: 1.2rem;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
+      color: var(--ink);
     }
 
     .result-hero {
@@ -330,6 +381,7 @@
       font-weight: 600;
       font-size: clamp(1.9rem, 5vw, 2.6rem);
       font-variant-numeric: tabular-nums;
+      color: var(--ink);
     }
 
     .result-card--savings .result-label { color: var(--clover); }
@@ -342,7 +394,10 @@
     .pulse { animation: pulseValue .3s ease; }
 
     @media (prefers-reduced-motion: reduce) {
-      .pulse, .hex-cell, input[type="range"] { animation: none !important; transition: none !important; }
+      .pulse, .hex-cell, input[type="range"], .result-card { 
+        animation: none !important; 
+        transition: none !important; 
+      }
     }
 
     .foot-note {
@@ -447,6 +502,27 @@
   </div>
 
   <script>
+    // ============ CACHÉ DE DOM (Alto Rendimiento) ============
+    const DOM = {
+      loanAmount: document.getElementById('loanAmount'),
+      loanAmountRange: document.getElementById('loanAmountRange'),
+      loanAmountDisplay: document.getElementById('loanAmountDisplay'),
+      numPayments: document.getElementById('numPayments'),
+      periodsDisplay: document.getElementById('periodsDisplay'),
+      periodsWarning: document.getElementById('periodsWarning'),
+      minimumSavings: document.getElementById('minimumSavings'),
+      savingsRange: document.getElementById('savingsRange'),
+      savingsDisplay: document.getElementById('savingsDisplay'),
+      savingsWarning: document.getElementById('savingsWarning'),
+      interestRateValue: document.getElementById('interestRateValue'),
+      interestPerPayment: document.getElementById('interestPerPayment'),
+      principalPerPayment: document.getElementById('principalPerPayment'),
+      totalPayment: document.getElementById('totalPayment'),
+      totalRepayment: document.getElementById('totalRepayment'),
+      totalEstimate: document.getElementById('totalEstimate'),
+      hiveSelector: document.getElementById('hiveSelector')
+    };
+
     const MIN_SAVINGS = 55000;
     const MAX_PERIODS = 32;
 
@@ -472,14 +548,12 @@
     function setResult(el, text) {
       el.textContent = text;
       el.classList.remove('pulse');
-      void el.offsetWidth; // reinicia la animación
+      void el.offsetWidth; // Reinicia la animación
       el.classList.add('pulse');
     }
 
-    /* ===== Selector en forma de panal para las cuotas ===== */
+    // ============ Selector en forma de panal ============
     function buildHiveSelector() {
-      const container = document.getElementById('hiveSelector');
-      const numPayments = document.getElementById('numPayments');
       for (let i = 1; i <= MAX_PERIODS; i++) {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -488,26 +562,28 @@
         btn.textContent = i;
         btn.setAttribute('aria-label', `${i} cuota${i > 1 ? 's' : ''}`);
         btn.title = `${i} cuota${i > 1 ? 's' : ''}`;
+        
         btn.addEventListener('click', () => {
-          numPayments.value = i;
+          DOM.numPayments.value = i;
           calculateLoan();
         });
         btn.addEventListener('mouseenter', () => previewHive(i));
         btn.addEventListener('focus', () => previewHive(i));
+        btn.addEventListener('mouseleave', () => previewHive(null));
         btn.addEventListener('blur', () => previewHive(null));
-        container.appendChild(btn);
+        
+        DOM.hiveSelector.appendChild(btn);
       }
-      container.addEventListener('mouseleave', () => previewHive(null));
     }
 
     function previewHive(hoverValue) {
-      const selected = parseInt(document.getElementById('numPayments').value) || 0;
-      const cells = document.querySelectorAll('#hiveSelector .hex-cell');
+      const selected = parseInt(DOM.numPayments.value) || 0;
+      const cells = DOM.hiveSelector.querySelectorAll('.hex-cell');
       cells.forEach(cell => {
         const v = parseInt(cell.dataset.value);
         if (hoverValue !== null) {
           cell.classList.toggle('preview', v <= hoverValue);
-          cell.classList.toggle('active', false);
+          cell.classList.remove('active');
         } else {
           cell.classList.remove('preview');
           cell.classList.toggle('active', v <= selected);
@@ -515,57 +591,45 @@
       });
     }
 
+    // ============ Lógica Principal ============
     function calculateLoan() {
-      const loanAmountEl = document.getElementById('loanAmount');
-      const loanAmountRangeEl = document.getElementById('loanAmountRange');
-      const numPaymentsEl = document.getElementById('numPayments');
-      const savingsEl = document.getElementById('minimumSavings');
-      const savingsRangeEl = document.getElementById('savingsRange');
-      const periodsWarning = document.getElementById('periodsWarning');
-      const savingsWarning = document.getElementById('savingsWarning');
-
       // --- Monto ---
-      const principal = parseFloat(loanAmountEl.value) || 0;
-      loanAmountRangeEl.value = principal; // el navegador ajusta el thumb dentro de min/max
-      document.getElementById('loanAmountDisplay').textContent = fmt.format(principal);
+      const principal = parseFloat(DOM.loanAmount.value) || 0;
+      DOM.loanAmountRange.value = principal;
+      DOM.loanAmountDisplay.textContent = fmt.format(principal);
 
-      // --- Cuotas: el número escrito manda; el panal solo refleja/edita ---
-      const rawPeriods = parseInt(numPaymentsEl.value);
+      // --- Cuotas ---
+      const rawPeriods = parseInt(DOM.numPayments.value);
       let periods = isNaN(rawPeriods) || rawPeriods < 1 ? 1 : rawPeriods;
       if (periods > MAX_PERIODS) {
-        periodsWarning.textContent = `Máximo ${MAX_PERIODS} cuotas — se calculará con ${MAX_PERIODS}.`;
+        DOM.periodsWarning.textContent = `Máximo ${MAX_PERIODS} cuotas — se calculará con ${MAX_PERIODS}.`;
         periods = MAX_PERIODS;
       } else {
-        periodsWarning.textContent = '';
+        DOM.periodsWarning.textContent = '';
       }
-      document.getElementById('periodsDisplay').textContent = `${periods} cuota${periods > 1 ? 's' : ''}`;
+      DOM.periodsDisplay.textContent = `${periods} cuota${periods > 1 ? 's' : ''}`;
       previewHive(null);
 
-      // --- Ahorro: se corrige solo al salir del campo, nunca mientras se escribe ---
-      let savings = parseFloat(savingsEl.value);
+      // --- Ahorro ---
+      let savings = parseFloat(DOM.minimumSavings.value);
       if (isNaN(savings) || savings < MIN_SAVINGS) {
         savings = MIN_SAVINGS;
-        savingsWarning.textContent = `El ahorro mínimo sugerido es ${fmt.format(MIN_SAVINGS)}.`;
+        DOM.savingsWarning.textContent = `El ahorro mínimo sugerido es ${fmt.format(MIN_SAVINGS)}.`;
       } else {
-        savingsWarning.textContent = '';
+        DOM.savingsWarning.textContent = '';
       }
-      savingsRangeEl.value = parseFloat(savingsEl.value) || MIN_SAVINGS;
-      document.getElementById('savingsDisplay').textContent = fmt.format(savings);
+      DOM.savingsRange.value = isNaN(parseFloat(DOM.minimumSavings.value)) ? MIN_SAVINGS : parseFloat(DOM.minimumSavings.value);
+      DOM.savingsDisplay.textContent = fmt.format(savings);
 
       // --- Tasa ---
       const ratePercent = getInterestRate(principal);
       const monthlyRate = ratePercent / 100;
-      document.getElementById('interestRateValue').textContent = ratePercent.toFixed(2) + '%';
+      DOM.interestRateValue.textContent = ratePercent.toFixed(2) + '%';
 
-      const interestPerPaymentEl = document.getElementById('interestPerPayment');
-      const principalPerPaymentEl = document.getElementById('principalPerPayment');
-      const totalPaymentEl = document.getElementById('totalPayment');
-      const totalRepaymentEl = document.getElementById('totalRepayment');
-      const totalEstimateEl = document.getElementById('totalEstimate');
-
+      // --- Cálculos ---
       if (principal <= 0) {
         const zero = fmt.format(0);
-        [interestPerPaymentEl, principalPerPaymentEl, totalPaymentEl, totalRepaymentEl, totalEstimateEl]
+        [DOM.interestPerPayment, DOM.principalPerPayment, DOM.totalPayment, DOM.totalRepayment, DOM.totalEstimate]
           .forEach(el => { el.textContent = zero; });
         return;
       }
@@ -576,35 +640,38 @@
       const totalRepayment = totalPayment * periods;
       const totalEstimate = totalPayment + savings;
 
-      setResult(interestPerPaymentEl, fmt.format(interestPerPayment));
-      setResult(principalPerPaymentEl, fmt.format(principalPerPayment));
-      setResult(totalPaymentEl, fmt.format(totalPayment));
-      setResult(totalRepaymentEl, fmt.format(totalRepayment));
-      setResult(totalEstimateEl, fmt.format(totalEstimate));
+      setResult(DOM.interestPerPayment, fmt.format(interestPerPayment));
+      setResult(DOM.principalPerPayment, fmt.format(principalPerPayment));
+      setResult(DOM.totalPayment, fmt.format(totalPayment));
+      setResult(DOM.totalRepayment, fmt.format(totalRepayment));
+      setResult(DOM.totalEstimate, fmt.format(totalEstimate));
     }
 
-    function normalizeSavings() {
-      calculateLoan();
-    }
-
-    /* ===== Sincronía deslizadores <-> campos numéricos ===== */
-    document.getElementById('loanAmountRange').addEventListener('input', (e) => {
-      document.getElementById('loanAmount').value = e.target.value;
+    // ============ Event Listeners Optimizados ============
+    DOM.loanAmountRange.addEventListener('input', (e) => {
+      DOM.loanAmount.value = e.target.value;
       calculateLoan();
     });
-    document.getElementById('savingsRange').addEventListener('input', (e) => {
-      document.getElementById('minimumSavings').value = e.target.value;
+    DOM.savingsRange.addEventListener('input', (e) => {
+      DOM.minimumSavings.value = e.target.value;
       calculateLoan();
     });
-    document.getElementById('loanAmount').addEventListener('input', calculateLoan);
-    document.getElementById('numPayments').addEventListener('input', calculateLoan);
-    document.getElementById('minimumSavings').addEventListener('input', calculateLoan);
-    document.getElementById('minimumSavings').addEventListener('blur', normalizeSavings);
+    
+    DOM.loanAmount.addEventListener('input', calculateLoan);
+    DOM.numPayments.addEventListener('input', calculateLoan);
+    DOM.minimumSavings.addEventListener('input', calculateLoan);
+    
+    // Normalizar ahorro al salir del input
+    DOM.minimumSavings.addEventListener('blur', () => {
+      if (parseFloat(DOM.minimumSavings.value) < MIN_SAVINGS || isNaN(parseFloat(DOM.minimumSavings.value))) {
+        DOM.minimumSavings.value = MIN_SAVINGS;
+        calculateLoan();
+      }
+    });
 
+    // Inicialización
     buildHiveSelector();
-    document.addEventListener('DOMContentLoaded', calculateLoan);
-    window.addEventListener('load', calculateLoan);
-    calculateLoan();
+    calculateLoan(); // Un solo llamado inicial es suficiente
   </script>
 </body>
 </html>
